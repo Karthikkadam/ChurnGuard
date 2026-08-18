@@ -61,19 +61,53 @@ def generate_synthetic_data(n_samples=10000, random_state=42):
     is_active_member = rng.choice([0, 1], n_samples, p=[0.4849, 0.5151])
     estimated_salary = rng.uniform(11, 199992, n_samples)
 
-    # Generate target with realistic churn rate (~20%)
-    churn_prob = np.zeros(n_samples)
-    churn_prob += (age > 45) * 0.15
-    churn_prob += (age > 55) * 0.10
-    churn_prob += (geography == 'Germany') * 0.12
-    churn_prob += (gender == 'Female') * 0.03
-    churn_prob += (num_of_products >= 3) * 0.25
-    churn_prob += (is_active_member == 0) * 0.08
-    churn_prob += (balance == 0) * -0.05
-    churn_prob += (balance > 100000) * 0.05
-    churn_prob += (credit_score < 500) * 0.05
-    churn_prob += 0.05  # base rate
-    churn_prob = churn_prob.clip(0, 0.85)
+    # Generate target with realistic churn rate (~20%) and STRONG learnable signals
+    # Using a logistic-style approach so the model can learn clear patterns
+    churn_logit = np.zeros(n_samples, dtype=float)
+
+    # Age: strong positive effect (older = more churn)
+    churn_logit += (age - 38) * 0.06
+
+    # Credit Score: strong negative effect (lower score = more churn)
+    churn_logit += (650 - credit_score) * 0.008
+
+    # Geography: Germany has much higher churn
+    churn_logit += (geography == 'Germany') * 1.5
+    churn_logit += (geography == 'Spain') * -0.2
+
+    # Gender: Female slightly higher churn
+    churn_logit += (gender == 'Female') * 0.5
+
+    # Number of Products: 3+ products = very high churn
+    churn_logit += (num_of_products == 1) * -0.2
+    churn_logit += (num_of_products >= 3) * 2.5
+    churn_logit += (num_of_products >= 4) * 2.0
+
+    # Active member: inactive = higher churn
+    churn_logit += (is_active_member == 0) * 0.8
+
+    # Balance: high balance = more churn (counterintuitive but matches real data)
+    churn_logit += (balance > 100000) * 0.5
+    churn_logit += (balance > 150000) * 0.3
+    churn_logit += (balance == 0) * -0.4
+
+    # Tenure: long tenure = less churn
+    churn_logit += (tenure < 2) * 0.3
+    churn_logit += (tenure > 7) * -0.3
+
+    # Has credit card: slight effect
+    churn_logit += (has_cr_card == 0) * 0.15
+
+    # Salary: lower salary = slightly more churn
+    churn_logit += (estimated_salary < 50000) * 0.2
+
+    # Base intercept to target ~20% churn
+    churn_logit += -2.0
+
+    # Convert logit to probability via sigmoid + noise
+    churn_prob = 1.0 / (1.0 + np.exp(-churn_logit))
+    noise = rng.normal(0, 0.05, n_samples)
+    churn_prob = (churn_prob + noise).clip(0.01, 0.99)
     exited = (rng.random(n_samples) < churn_prob).astype(int)
 
     df = pd.DataFrame({
