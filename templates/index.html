@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ChurnGuard — AI-powered customer churn prediction for banking. Predict whether a customer is likely to leave using machine learning.">
+    <title>ChurnGuard — Customer Churn Prediction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Animated background particles -->
+    <div class="bg-particles" aria-hidden="true">
+        <div class="particle particle-1"></div>
+        <div class="particle particle-2"></div>
+        <div class="particle particle-3"></div>
+        <div class="particle particle-4"></div>
+        <div class="particle particle-5"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <div class="brand-icon">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <path d="M14 2L26 8V20L14 26L2 20V8L14 2Z" stroke="url(#brandGrad)" stroke-width="2" fill="none"/>
+                    <path d="M14 8L20 11V17L14 20L8 17V11L14 8Z" fill="url(#brandGrad)" opacity="0.6"/>
+                    <defs>
+                        <linearGradient id="brandGrad" x1="2" y1="2" x2="26" y2="26">
+                            <stop offset="0%" stop-color="#6366f1"/>
+                            <stop offset="100%" stop-color="#a855f7"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <span class="brand-text">ChurnGuard</span>
+        </div>
+        <div class="nav-links">
+            <a href="#prediction" class="nav-link active" data-section="prediction" id="nav-predict">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="10"/></svg>
+                Predict
+            </a>
+            <a href="#performance" class="nav-link" data-section="performance" id="nav-performance">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                Performance
+            </a>
+            <a href="#info" class="nav-link" data-section="info" id="nav-info">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                Info
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-badge">AI-Powered Analytics</div>
+            <h1 class="hero-title">Customer Churn <span class="gradient-text">Prediction</span></h1>
+            <p class="hero-subtitle">Predict whether a customer is likely to leave the bank using advanced machine learning models trained on real banking data.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Prediction Section -->
+        <section class="section prediction-section" id="prediction">
+            <div class="section-grid">
+
+                <!-- Input Form -->
+                <div class="glass-card form-card" id="form-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                        </div>
+                        <h2 class="card-title">Customer Information</h2>
+                    </div>
+
+                    <form id="predict-form" class="predict-form">
+                        <div class="form-grid">
+                            <!-- Credit Score -->
+                            <div class="form-group">
+                                <label for="credit-score" class="form-label">Credit Score</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="credit-score" name="CreditScore" 
+                                           value="650" min="350" max="850" class="form-input" required>
+                                    <span class="input-hint">350 - 850</span>
+                                </div>
+                            </div>
+
+                            <!-- Age -->
+                            <div class="form-group">
+                                <label for="age" class="form-label">Age</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="age" name="Age" 
+                                           value="35" min="18" max="100" class="form-input" required>
+                                    <span class="input-hint">18 - 100</span>
+                                </div>
+                            </div>
+
+                            <!-- Geography -->
+                            <div class="form-group">
+                                <label for="geography" class="form-label">Geography</label>
+                                <div class="select-wrapper">
+                                    <select id="geography" name="Geography" class="form-select" required>
+                                        <option value="France">France</option>
+                                        <option value="Germany">Germany</option>
+                                        <option value="Spain">Spain</option>
+                                    </select>
+                                    <svg class="select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                                </div>
+                            </div>
+
+                            <!-- Gender -->
+                            <div class="form-group">
+                                <label for="gender" class="form-label">Gender</label>
+                                <div class="select-wrapper">
+                                    <select id="gender" name="Gender" class="form-select" required>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                    <svg class="select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                                </div>
+                            </div>
+
+                            <!-- Tenure -->
+                            <div class="form-group">
+                                <label for="tenure" class="form-label">Tenure (years)</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="tenure" name="Tenure" 
+                                           value="5" min="0" max="10" class="form-input" required>
+                                    <span class="input-hint">0 - 10</span>
+                                </div>
+                            </div>
+
+                            <!-- Balance -->
+                            <div class="form-group">
+                                <label for="balance" class="form-label">Balance ($)</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="balance" name="Balance" 
+                                           value="50000" min="0" max="300000" class="form-input" required>
+                                    <span class="input-hint">Account balance</span>
+                                </div>
+                            </div>
+
+                            <!-- Num Products -->
+                            <div class="form-group">
+                                <label for="products" class="form-label">Products</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="products" name="NumOfProducts" 
+                                           value="2" min="1" max="4" class="form-input" required>
+                                    <span class="input-hint">1 - 4</span>
+                                </div>
+                            </div>
+
+                            <!-- Salary -->
+                            <div class="form-group">
+                                <label for="salary" class="form-label">Est. Salary ($)</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="salary" name="EstimatedSalary" 
+                                           value="80000" min="0" max="200000" class="form-input" required>
+                                    <span class="input-hint">Annual salary</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Toggle switches -->
+                        <div class="toggle-row">
+                            <div class="toggle-group">
+                                <label class="toggle-label" for="credit-card">Credit Card</label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="credit-card" name="HasCrCard" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-group">
+                                <label class="toggle-label" for="active-member">Active Member</label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="active-member" name="IsActiveMember" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="predict-btn" id="predict-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                            <span>Predict Churn</span>
+                            <div class="btn-shimmer"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Result Card -->
+                <div class="glass-card result-card" id="result-card">
+                    <div class="card-header">
+                        <div class="card-icon result-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        </div>
+                        <h2 class="card-title">Prediction Result</h2>
+                    </div>
+
+                    <!-- Placeholder state -->
+                    <div class="result-placeholder" id="result-placeholder">
+                        <div class="placeholder-ring">
+                            <svg viewBox="0 0 160 160" class="gauge-svg">
+                                <circle cx="80" cy="80" r="70" class="gauge-bg"/>
+                                <circle cx="80" cy="80" r="70" class="gauge-progress" 
+                                        style="stroke-dasharray: 0, 440;"/>
+                            </svg>
+                            <div class="gauge-center">
+                                <span class="gauge-value">—</span>
+                                <span class="gauge-label">Awaiting Input</span>
+                            </div>
+                        </div>
+                        <p class="placeholder-text">Fill in customer details and click<br><strong>Predict Churn</strong> to see results</p>
+                    </div>
+
+                    <!-- Result state -->
+                    <div class="result-content hidden" id="result-content">
+                        <div class="result-gauge">
+                            <svg viewBox="0 0 160 160" class="gauge-svg">
+                                <circle cx="80" cy="80" r="70" class="gauge-bg"/>
+                                <circle cx="80" cy="80" r="70" class="gauge-progress" id="gauge-circle"
+                                        style="stroke-dasharray: 0, 440;"/>
+                            </svg>
+                            <div class="gauge-center">
+                                <span class="gauge-value" id="gauge-value">0%</span>
+                                <span class="gauge-label">Churn Probability</span>
+                            </div>
+                        </div>
+
+                        <div class="risk-badge" id="risk-badge">
+                            <span class="risk-dot"></span>
+                            <span class="risk-text" id="risk-text">LOW RISK</span>
+                        </div>
+
+                        <div class="result-explanation" id="result-explanation">
+                            <p>Customer is unlikely to churn.</p>
+                        </div>
+
+                        <button class="explanation-btn" id="explanation-toggle">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                            View Explanation
+                        </button>
+
+                        <div class="explanation-details hidden" id="explanation-details">
+                            <ul id="explanation-list"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Loading state -->
+                    <div class="result-loading hidden" id="result-loading">
+                        <div class="loading-spinner">
+                            <div class="spinner-ring"></div>
+                        </div>
+                        <p>Analyzing customer data...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Performance Section -->
+        <section class="section performance-section" id="performance">
+            <div class="section-header">
+                <h2 class="section-title">Model <span class="gradient-text">Performance</span></h2>
+                <p class="section-subtitle">XGBoost classifier trained on 10,000 customer records</p>
+            </div>
+
+            <!-- Metric Cards -->
+            <div class="metrics-grid" id="metrics-grid">
+                <div class="metric-card" id="metric-accuracy">
+                    <div class="metric-ring">
+                        <svg viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="34" class="metric-ring-bg"/>
+                            <circle cx="40" cy="40" r="34" class="metric-ring-fill accuracy-ring" style="stroke-dasharray: 0, 214;"/>
+                        </svg>
+                        <span class="metric-value" data-metric="accuracy">—</span>
+                    </div>
+                    <span class="metric-name">Accuracy</span>
+                </div>
+                <div class="metric-card" id="metric-precision">
+                    <div class="metric-ring">
+                        <svg viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="34" class="metric-ring-bg"/>
+                            <circle cx="40" cy="40" r="34" class="metric-ring-fill precision-ring" style="stroke-dasharray: 0, 214;"/>
+                        </svg>
+                        <span class="metric-value" data-metric="precision">—</span>
+                    </div>
+                    <span class="metric-name">Precision</span>
+                </div>
+                <div class="metric-card" id="metric-recall">
+                    <div class="metric-ring">
+                        <svg viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="34" class="metric-ring-bg"/>
+                            <circle cx="40" cy="40" r="34" class="metric-ring-fill recall-ring" style="stroke-dasharray: 0, 214;"/>
+                        </svg>
+                        <span class="metric-value" data-metric="recall">—</span>
+                    </div>
+                    <span class="metric-name">Recall</span>
+                </div>
+                <div class="metric-card" id="metric-f1">
+                    <div class="metric-ring">
+                        <svg viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="34" class="metric-ring-bg"/>
+                            <circle cx="40" cy="40" r="34" class="metric-ring-fill f1-ring" style="stroke-dasharray: 0, 214;"/>
+                        </svg>
+                        <span class="metric-value" data-metric="f1">—</span>
+                    </div>
+                    <span class="metric-name">F1 Score</span>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <!-- Model Comparison -->
+                <div class="glass-card chart-card" id="model-comparison-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                        </div>
+                        <h3 class="card-title">Model Comparison</h3>
+                    </div>
+                    <div class="chart-container" id="model-comparison-chart"></div>
+                </div>
+
+                <!-- Feature Importance -->
+                <div class="glass-card chart-card" id="feature-importance-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-6"/></svg>
+                        </div>
+                        <h3 class="card-title">Feature Importance</h3>
+                    </div>
+                    <div class="chart-container" id="feature-importance-chart"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Info Section -->
+        <section class="section info-section hidden" id="info">
+            <div class="section-header">
+                <h2 class="section-title">About <span class="gradient-text">ChurnGuard</span></h2>
+                <p class="section-subtitle">Understanding the model and its predictions</p>
+            </div>
+
+            <div class="info-grid">
+                <div class="glass-card info-card">
+                    <div class="info-icon">🎯</div>
+                    <h3>What is Customer Churn?</h3>
+                    <p>Customer churn (attrition) is the loss of clients or customers. It is commonly expressed as the percentage of subscribers who discontinue their subscriptions within a given period.</p>
+                </div>
+                <div class="glass-card info-card">
+                    <div class="info-icon">🤖</div>
+                    <h3>How Does It Work?</h3>
+                    <p>ChurnGuard uses an XGBoost classifier trained on 10,000 customer records. The model analyzes 10 features including credit score, age, geography, balance, and activity status to predict churn probability.</p>
+                </div>
+                <div class="glass-card info-card">
+                    <div class="info-icon">📊</div>
+                    <h3>Key Features</h3>
+                    <p>The most influential factors are <strong>Age</strong>, <strong>Estimated Salary</strong>, and <strong>Credit Score</strong>. Customers from Germany and inactive members show higher churn rates.</p>
+                </div>
+                <div class="glass-card info-card">
+                    <div class="info-icon">⚡</div>
+                    <h3>Model Performance</h3>
+                    <p>XGBoost outperformed 8 other algorithms including Neural Networks, Gradient Boosting, and Random Forest, achieving the highest accuracy on test data.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>ChurnGuard &copy; 2026 — Powered by XGBoost &amp; Machine Learning</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

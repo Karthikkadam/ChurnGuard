@@ -1,0 +1,649 @@
+Predict Customer Churn with Python
+Table of Contents
+1 Introduction
+2 Import libraries
+3 Read dataset
+4 Exploratory data analysis (EDA)
+4.1 Shape of dataset
+4.2 Preview dataset
+4.3 Summary of dataset
+4.4 Statistical properties of dataset
+5 Feature selection
+6 Convert categorical columns to numeric columns
+6.1 Explore Gender variable
+6.2 Explore Geography variable
+7 Feature Scaling
+8 Model Training
+8.1 Predict accuracy with different algorithms
+8.2 Plot the classifier accuracy scores
+9 Feature Importance
+9.1 Feature importance with Random Forest model
+9.2 Drop least important feature
+10 Confusion Matrix
+11 Classification Metrices
+11.1 Classification Report
+11.2 Classification Accuracy
+11.3 Classification Error
+11.4 Precision
+11.5 Recall
+11.6 True Positive Rate
+11.7 False Positive Rate
+11.8 Specificity (True Negative Rate)
+11.9 f1 – score
+11.10 Support
+12 Cross-Validation
+13 Results and Conclusion
+14 References
+1. Introduction
+Customer churn (also known as customer attrition) is the loss of clients or customers. It is most commonly expressed as the percentage of service subscribers who discontinue their subscriptions within a given time period. In this project, we will build a machine learning model to predict customer churn.
+2. Import libraries
+We will start off by importing the required libraries.
+
+[ ]
+import numpy as np
+import pandas as pd
+import sklearn
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV , KFold , cross_val_score
+
+[ ]
+# Classification algorithms
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+from sklearn.gaussian_process.kernels import RBF
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, VotingClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis , QuadraticDiscriminantAnalysis
+from sklearn.neural_network import MLPClassifier
+import lightgbm as lgb
+import xgboost as xgb
+
+
+[ ]
+# Classification metrices
+from sklearn.metrics import accuracy_score,confusion_matrix, classification_report, precision_score,recall_score,f1_score 
+3. Read dataset
+
+[ ]
+from google.colab import drive
+
+drive.mount('/content/drive')
+
+
+Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount("/content/drive", force_remount=True).
+
+[ ]
+file_path = '/content/drive/MyDrive/datasets/Customer Churn/Churn_Modelling.csv'
+
+
+[ ]
+df = pd.read_csv(file_path)
+4. Exploratory Data Analysis
+Now, we will perform EDA to gain insights about our data.
+4.1 Shape of dataset
+
+[ ]
+df.shape
+(10000, 14)
+Our dataset contains 10000 instances and 14 variables.
+Now, let's take a quick look of our dataset.
+4.2 Preview dataset
+
+[ ]
+df.head()
+
+4.3 Summary of dataset
+
+[ ]
+df.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 10000 entries, 0 to 9999
+Data columns (total 14 columns):
+ #   Column           Non-Null Count  Dtype  
+---  ------           --------------  -----  
+ 0   RowNumber        10000 non-null  int64  
+ 1   CustomerId       10000 non-null  int64  
+ 2   Surname          10000 non-null  object 
+ 3   CreditScore      10000 non-null  int64  
+ 4   Geography        10000 non-null  object 
+ 5   Gender           10000 non-null  object 
+ 6   Age              10000 non-null  int64  
+ 7   Tenure           10000 non-null  int64  
+ 8   Balance          10000 non-null  float64
+ 9   NumOfProducts    10000 non-null  int64  
+ 10  HasCrCard        10000 non-null  int64  
+ 11  IsActiveMember   10000 non-null  int64  
+ 12  EstimatedSalary  10000 non-null  float64
+ 13  Exited           10000 non-null  int64  
+dtypes: float64(2), int64(9), object(3)
+memory usage: 1.1+ MB
+We can see that there are 3 categorical variables and 11 numerical variables in the dataset.
+
+Also, there are no missing values in the dataset.
+
+4.4 Statistical properties of dataset
+
+[ ]
+df.describe()
+
+5 Feature selection
+We can see that there are 14 variables in the dataset.
+
+The target variable is Exited and there are remaining 13 variables.
+
+All the remaining 13 variables are not useful for prediction. We have to select the relevant variables.
+
+So, first let's check the variables in the dataset.
+
+
+[ ]
+df.columns
+Index(['RowNumber', 'CustomerId', 'Surname', 'CreditScore', 'Geography',
+       'Gender', 'Age', 'Tenure', 'Balance', 'NumOfProducts', 'HasCrCard',
+       'IsActiveMember', 'EstimatedSalary', 'Exited'],
+      dtype='object')
+Not all columns affect the customer churn. Let's discuss each column one by one:
+
+RowNumber — corresponds to the record (row) number and has no effect on the output. This column will be removed.
+CustomerId — contains random values and has no effect on customer leaving the bank. This column will be removed.
+Surname — the surname of a customer has no impact on their decision to leave the bank. This column will be removed.
+CreditScore — can have an effect on customer churn, since a customer with a higher credit score is less likely to leave the bank.
+Geography — a customer's location can affect their decision to leave the bank. We'll keep this column.
+Gender — it's interesting to explore whether gender plays a role in a customer leaving the bank. We'll include this column, too.
+Age —this is certainly relevant, since older customers are less likely to leave their bank than younger ones.
+Tenure — refers to the number of years that the customer has been a client of the bank. Normally, older clients are more loyal and less likely to leave a bank.
+Balance — also a very good indicator of customer churn, as people with a higher balance in their accounts are less likely to leave the bank compared to those with lower balances.
+NumOfProducts — refers to the number of products that a customer has purchased through the bank.
+HasCrCard — denotes whether or not a customer has a credit card. This column is also relevant, since people with a credit card are less likely to leave the bank.
+IsActiveMember — active customers are less likely to leave the bank, so we'll keep this.
+EstimatedSalary — as with balance, people with lower salaries are more likely to leave the bank compared to those with higher salaries.
+Exited — whether or not the customer left the bank. This is what we have to predict.
+So, we'll remove the RowNumber, CustomerId and Surname columns from our feature set. All the remaining columns do contribute to the customer churn in one way or another.
+
+We can drop these columns as follows:
+
+
+[ ]
+df.drop(['RowNumber', 'CustomerId', 'Surname'], axis=1, inplace=True)
+
+
+[ ]
+df.columns
+Index(['CreditScore', 'Geography', 'Gender', 'Age', 'Tenure', 'Balance',
+       'NumOfProducts', 'HasCrCard', 'IsActiveMember', 'EstimatedSalary',
+       'Exited'],
+      dtype='object')
+We can see that the above three columns are removed from the dataset.
+6. Convert categorical columns to numeric columns
+Now, in our dataset, we have two categorical columns: Gender and Geography. We should convert them into numerical format.
+6.1 Explore Gender variable
+
+[ ]
+df['Gender'].value_counts()
+Male      5457
+Female    4543
+Name: Gender, dtype: int64
+
+[ ]
+# let's do One Hot Encoding of Gender variable
+# get k dummy variables after One Hot Encoding 
+
+
+df['Gender'] = pd.get_dummies(df['Gender'], drop_first = False)
+Now, let's take a look again at our dataset.
+
+[ ]
+df.head()
+
+Here 1 stands for female and 0 stands for male.
+6.2 Explore Geography variable
+
+[ ]
+df['Geography'].value_counts()
+France     5014
+Germany    2509
+Spain      2477
+Name: Geography, dtype: int64
+
+[ ]
+# let's do One Hot Encoding of Goegraphy variable
+# get k dummy variables after One Hot Encoding 
+
+
+df['Geography'] = pd.get_dummies(df['Geography'], drop_first = False)
+
+
+Let's again take a look at our dataset.
+
+[ ]
+df.head()
+
+7. Feature Scaling
+
+[ ]
+X =  df.drop(['Exited'], axis=1)
+y = df['Exited']
+
+
+[ ]
+cols = X.columns
+
+[ ]
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X = scaler.fit_transform(X)
+
+[ ]
+X = pd.DataFrame(X, columns=[cols])
+
+[ ]
+X.head()
+
+8. Model Training
+We can see that our dataset is now ready to be fed into a ML model. We will proceed as follows:-
+
+[ ]
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 42)
+8.1 Predict accuracy with different algorithms
+Let's predict accuracy with different algorithms and evaluate their performance.
+
+[ ]
+names = ["Logistic Regression", "Nearest Neighbors", "Naive Bayes", "Linear SVM", "RBF SVM", 
+         "Decision Tree", "Random Forest", "AdaBoost", "Gradient Boosting", 
+         "LDA", "QDA", "Neural Net", "XGBoost" ]   
+
+[ ]
+classifiers = [
+    LogisticRegression(),
+    KNeighborsClassifier(5),
+    GaussianNB(),
+    SVC(kernel="linear", C=0.025),
+    SVC(kernel = "rbf", gamma=2, C=1),
+    DecisionTreeClassifier(max_depth=5),
+    RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
+    AdaBoostClassifier(),
+    GradientBoostingClassifier(),
+    LinearDiscriminantAnalysis(),
+    QuadraticDiscriminantAnalysis(),
+    MLPClassifier(alpha=1, max_iter=1000),     
+    xgb.XGBClassifier()
+   ]
+
+[ ]
+accuracy_scores = []
+
+# iterate over classifiers and predict accuracy
+for name, clf in zip(names, classifiers):
+    clf.fit(X_train, y_train)
+    score = clf.score(X_test, y_test)
+    score = round(score, 4)
+    accuracy_scores.append(score)
+    print(name ,' : ' , score)
+Logistic Regression  :  0.813
+Nearest Neighbors  :  0.8315
+Naive Bayes  :  0.8365
+Linear SVM  :  0.8035
+RBF SVM  :  0.8065
+Decision Tree  :  0.8575
+Random Forest  :  0.82
+AdaBoost  :  0.8545
+Gradient Boosting  :  0.8645
+LDA  :  0.8105
+QDA  :  0.836
+Neural Net  :  0.861
+XGBoost  :  0.866
+
+[ ]
+classifiers_performance = pd.DataFrame({"Classifiers": names, "Accuracy Scores": accuracy_scores})
+classifiers_performance
+
+The accuracy score of top performing algorithms in descending order is given below -
+
+[ ]
+classifiers_performance.sort_values(by = 'Accuracy Scores' , ascending = False)[['Classifiers', 'Accuracy Scores']]
+
+8.2 Plot the classifier accuracy scores
+
+[ ]
+fig, ax = plt.subplots(figsize=(8,6))
+x = classifiers_performance['Accuracy Scores']
+y = classifiers_performance['Classifiers']
+ax.barh(y, x, align='center', color='green')
+ax.invert_yaxis()  # labels read top-to-bottom
+ax.set_xlabel('Accuracy Scores')
+ax.set_ylabel('Classifiers', rotation=0)
+ax.set_title('Classifier Accuracy Scores')
+plt.show()
+
+9. Feature Importance
+In this section, we will see how to improve model performance by feature selection.
+
+We will visualize feature importance with random forest classifier and drop the least important feature, rebuild the model and check effect on accuracy.
+
+For a comprehensive overview on feature selection techniques, please see the kernel -
+
+A Reference Guide to Feature Selection Methods
+
+9.1 Feature importance with Random Forest model
+Until now, I have used all the features given in the model. Now, I will select only the important features, build the model using these features and see its effect on accuracy.
+
+First, I will create the Random Forest model as follows:-
+
+
+[ ]
+# instantiate the classifier with n_estimators = 100
+clf = RandomForestClassifier(n_estimators=100, random_state=0)
+
+
+# fit the classifier to the training set
+clf.fit(X_train, y_train)
+RandomForestClassifier(bootstrap=True, ccp_alpha=0.0, class_weight=None,
+                       criterion='gini', max_depth=None, max_features='auto',
+                       max_leaf_nodes=None, max_samples=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=1, min_samples_split=2,
+                       min_weight_fraction_leaf=0.0, n_estimators=100,
+                       n_jobs=None, oob_score=False, random_state=0, verbose=0,
+                       warm_start=False)
+Now, I will use the feature importance variable to see feature importance scores.
+
+[ ]
+# view the feature scores
+feature_scores = pd.Series(clf.feature_importances_, index=X_train.columns).sort_values(ascending=False)
+feature_scores
+Age                0.239726
+EstimatedSalary    0.153873
+CreditScore        0.147649
+Balance            0.139864
+NumOfProducts      0.132292
+Tenure             0.084031
+IsActiveMember     0.043396
+Geography          0.020497
+HasCrCard          0.019983
+Gender             0.018689
+dtype: float64
+We can see that the most important feature is Age and least important feature is Gender.
+9.2 Drop least important feature
+Now, I will drop the least important feature Gender from the model, rebuild the model and check its effect on accuracy.
+
+[ ]
+# drop the least important feature Gender from X_train and X_test for further analysis
+X1_train = X_train.drop(['Gender'], axis=1)
+X1_test = X_test.drop(['Gender'], axis=1)
+/usr/local/lib/python3.7/dist-packages/pandas/core/generic.py:3889: PerformanceWarning: dropping on a non-lexsorted multi-index without a level parameter may impact performance.
+  obj = obj._drop_axis(labels, axis, level=level, errors=errors)
+
+[ ]
+accuracy_scores1 = []
+
+# iterate over classifiers and predict accuracy
+for name, clf in zip(names, classifiers):
+    clf.fit(X1_train, y_train)
+    score = clf.score(X1_test, y_test)
+    score = round(score, 4)
+    accuracy_scores1.append(score)
+    print(name ,' : ' , score)
+Logistic Regression  :  0.812
+Nearest Neighbors  :  0.8405
+Naive Bayes  :  0.831
+Linear SVM  :  0.8035
+RBF SVM  :  0.8165
+Decision Tree  :  0.8575
+Random Forest  :  0.8245
+AdaBoost  :  0.8515
+Gradient Boosting  :  0.862
+LDA  :  0.81
+QDA  :  0.839
+Neural Net  :  0.8595
+XGBoost  :  0.863
+Now, we will compare our original accuracy and latest accuracy from the model.
+
+[ ]
+classifiers_performance1 = pd.DataFrame({"Classifiers": names, "Accuracy Scores": accuracy_scores, 
+                                         "Accuracy Scores1": accuracy_scores1})
+classifiers_performance1
+
+We can see that dropping the least important feature Gender from the model does not result in performance improvement.
+
+We can see that XGBoost has maximum accuracy of 0.866.
+
+So, we will use the XGBoost Classifier to plot the confusion-matrix.
+
+10. Confusion Matrix
+A confusion matrix is a tool for summarizing the performance of a classification algorithm. A confusion matrix will give us a clear picture of classification model performance and the types of errors produced by the model. It gives us a summary of correct and incorrect predictions broken down by each category. The summary is represented in a tabular form.
+
+Four types of outcomes are possible while evaluating a classification model performance. These four outcomes are described below:-
+
+True Positives (TP) – True Positives occur when we predict an observation belongs to a certain class and the observation actually belongs to that class.
+
+True Negatives (TN) – True Negatives occur when we predict an observation does not belong to a certain class and the observation actually does not belong to that class.
+
+False Positives (FP) – False Positives occur when we predict an observation belongs to a certain class but the observation actually does not belong to that class. This type of error is called Type I error.
+
+False Negatives (FN) – False Negatives occur when we predict an observation does not belong to a certain class but the observation actually belongs to that class. This is a very serious error and it is called Type II error.
+
+These four outcomes are summarized in a confusion matrix.
+
+We will use the XGBoost Classifier to plot the confusion-matrix.
+
+
+[ ]
+# instantiate the XGBoost classifier
+xgb_clf = xgb.XGBClassifier()
+
+
+# fit the classifier to the modified training set
+xgb_clf.fit(X_train, y_train)
+XGBClassifier(base_score=0.5, booster='gbtree', colsample_bylevel=1,
+              colsample_bynode=1, colsample_bytree=1, gamma=0,
+              learning_rate=0.1, max_delta_step=0, max_depth=3,
+              min_child_weight=1, missing=None, n_estimators=100, n_jobs=1,
+              nthread=None, objective='binary:logistic', random_state=0,
+              reg_alpha=0, reg_lambda=1, scale_pos_weight=1, seed=None,
+              silent=None, subsample=1, verbosity=1)
+
+[ ]
+# predict on the test set
+y_pred = xgb_clf.predict(X_test)
+
+[ ]
+# print the accuracy
+print('XGBoost Classifier model accuracy score: {0:0.4f}'. format(accuracy_score(y_test, y_pred)))
+XGBoost Classifier model accuracy score: 0.8660
+
+[ ]
+# print confusion-matrix
+
+cm = confusion_matrix(y_test, y_pred)
+
+print('Confusion matrix\n\n', cm)
+
+print('\nTrue Positives(TP) = ', cm[0,0])
+
+print('\nTrue Negatives(TN) = ', cm[1,1])
+
+print('\nFalse Positives(FP) = ', cm[0,1])
+
+print('\nFalse Negatives(FN) = ', cm[1,0])
+Confusion matrix
+
+ [[1557   50]
+ [ 218  175]]
+
+True Positives(TP) =  1557
+
+True Negatives(TN) =  175
+
+False Positives(FP) =  50
+
+False Negatives(FN) =  218
+The confusion matrix shows 1557 + 175 = 1732 correct predictions and 50 + 218 = 268 incorrect predictions.
+
+In this case, we have
+
+True Positives (Actual Positive:1 and Predict Positive:1) - 1557
+True Negatives (Actual Negative:0 and Predict Negative:0) - 175
+False Positives (Actual Negative:0 but Predict Positive:1) - 50 (Type I error)
+False Negatives (Actual Positive:1 but Predict Negative:0) - 218 (Type II error)
+
+[ ]
+# visualize confusion matrix with seaborn heatmap
+
+cm_matrix = pd.DataFrame(data=cm, columns=['Actual Positive:1', 'Actual Negative:0'], 
+                                 index=['Predict Positive:1', 'Predict Negative:0'])
+
+sns.heatmap(cm_matrix, annot=True, fmt='d', cmap='YlGnBu')
+
+11. Classification Metrices
+11.1 Classification Report
+Classification Report is another way to evaluate the classification model performance.
+It displays the precision, recall, f1 and support scores for the model.
+We can print a classification report as follows:-
+
+[ ]
+print(classification_report(y_test, y_pred))
+              precision    recall  f1-score   support
+
+           0       0.88      0.97      0.92      1607
+           1       0.78      0.45      0.57       393
+
+    accuracy                           0.87      2000
+   macro avg       0.83      0.71      0.74      2000
+weighted avg       0.86      0.87      0.85      2000
+
+11.2 Classification Accuracy
+
+[ ]
+TP = cm[0,0]
+TN = cm[1,1]
+FP = cm[0,1]
+FN = cm[1,0]
+
+[ ]
+# print classification accuracy
+
+classification_accuracy = (TP + TN) / float(TP + TN + FP + FN)
+
+print('Classification accuracy : {0:0.4f}'.format(classification_accuracy))
+Classification accuracy : 0.8660
+11.3 Classification Error
+
+[ ]
+# print classification error
+
+classification_error = (FP + FN) / float(TP + TN + FP + FN)
+
+print('Classification error : {0:0.4f}'.format(classification_error))
+Classification error : 0.1340
+11.4 Precision
+Precision can be defined as the percentage of correctly predicted positive outcomes out of all the predicted positive outcomes. It can be given as the ratio of true positives (TP) to the sum of true and false positives (TP + FP).
+
+So, Precision identifies the proportion of correctly predicted positive outcome. It is more concerned with the positive class than the negative class.
+
+Mathematically, precision can be defined as the ratio of TP to (TP + FP).
+
+
+[ ]
+# print precision score
+
+precision = TP / float(TP + FP)
+
+print('Precision : {0:0.4f}'.format(precision))
+Precision : 0.9689
+11.5 Recall
+Recall can be defined as the percentage of correctly predicted positive outcomes out of all the actual positive outcomes. It can be given as the ratio of true positives (TP) to the sum of true positives and false negatives (TP + FN).
+
+Recall is also called Sensitivity.
+
+Recall identifies the proportion of correctly predicted actual positives.
+
+Mathematically, Recall can be given as the ratio of TP to (TP + FN).
+
+
+[ ]
+recall = TP / float(TP + FN)
+
+print('Recall or Sensitivity : {0:0.4f}'.format(recall))
+Recall or Sensitivity : 0.8772
+11.6 True Positive Rate
+True Positive Rate is synonymous with Recall.
+
+[ ]
+true_positive_rate = TP / float(TP + FN)
+
+print('True Positive Rate : {0:0.4f}'.format(true_positive_rate))
+True Positive Rate : 0.8772
+11.7 False Positive Rate
+
+[ ]
+false_positive_rate = FP / float(FP + TN)
+
+print('False Positive Rate : {0:0.4f}'.format(false_positive_rate))
+
+False Positive Rate : 0.2222
+11.8 Specificity (True Negative Rate)
+Specificity is also called True Negative Rate.
+
+[ ]
+specificity = TN / (TN + FP)
+
+print('Specificity : {0:0.4f}'.format(specificity))
+Specificity : 0.7778
+11.9 f1-score
+f1-score is the weighted harmonic mean of precision and recall.
+The best possible f1-score would be 1.0 and the worst would be 0.0.
+f1-score is the harmonic mean of precision and recall.
+So, f1-score is always lower than accuracy measures as they embed precision and recall into their computation.
+The weighted average of f1-score should be used to compare classifier models, not global accuracy.
+11.10 Support
+Support is the actual number of occurrences of the class in our dataset.
+12. Cross Validation
+We will check whether Cross Validation results in performance improvement.
+
+[ ]
+# iterate over classifiers and calculate cross-validation score
+for name, clf in zip(names, classifiers):
+    scores = cross_val_score(clf, X_train, y_train, cv = 10, scoring='accuracy')
+    print(name , ':{:.4f}'.format(scores.mean()))
+Logistic Regression :0.8092
+Nearest Neighbors :0.8229
+Naive Bayes :0.8287
+Linear SVM :0.7945
+RBF SVM :0.7990
+Decision Tree :0.8544
+Random Forest :0.8123
+AdaBoost :0.8498
+Gradient Boosting :0.8580
+LDA :0.8069
+QDA :0.8375
+Neural Net :0.8568
+XGBoost :0.8584
+It can be seen that cross-validation does not result in performance improvement.
+13. Results and Conclusion
+In this project, we build an ML model to predict the churn-rate of the customer.
+There are no missing values in the dataset.
+RowNumber, CustomerId and Surname have no predictive power. So, we have dropped them from the dataset.
+There are two categorical variables - Gender and Geography. We have converted them into numerical variable.
+We have trained the model with different algorithms and compare their accuracy.
+XGBoost fared better than other algorithms and resulted in maximum accuracy of 0.866.
+We find the most important feature as Age and least important feature as Gender. Dropping the least important feature Gender does not result in performance improvement.
+We find :-
+True Positives (Actual Positive:1 and Predict Positive:1) - 1557
+True Negatives (Actual Negative:0 and Predict Negative:0) - 175
+False Positives (Actual Negative:0 but Predict Positive:1) - 50 (Type I error)
+False Negatives (Actual Positive:1 but Predict Negative:0) - 218 (Type II error)
+Cross-validation does not result in performance improvement.
+14. References
+This notebook is inspired from the following notebook-
+
+https://learnpython.com/blog/python-customer-churn-prediction/
