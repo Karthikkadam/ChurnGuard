@@ -994,10 +994,50 @@ body {
     position: relative;
     z-index: 1;
     text-align: center;
-    padding: 32px 40px;
+    padding: 36px 40px;
     border-top: 1px solid var(--border-color);
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.footer-notebook {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    transition: all var(--transition-base);
+}
+
+.footer-notebook:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    background: rgba(99, 102, 241, 0.14);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.18);
+}
+
+.footer-notebook-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #818cf8;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.footer-notebook-link:hover {
+    color: #c084fc;
+    text-decoration: underline;
 }
 
 /* ---------- Utility ---------- */
